@@ -8,7 +8,9 @@ import { PageHeader } from '@kit/ui/makerkit/page';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { initMercadoPago, CardPayment } from '@mercadopago/sdk-react';
-import { MERCADOPAGO_PUBLIC_KEY } from '@/lib/mercadopago/config';
+
+// Importar directamente la clave pública de MercadoPago
+const MERCADOPAGO_PUBLIC_KEY = process.env.NEXT_PUBLIC_MERCADOPAGO_PUBLIC_KEY || 'TEST-743a8fe3-d95f-4f00-a3c8-4f1954cefc9c';
 
 // Esta interfaz representaría lo que vendría de la página del carrito
 interface OrderSummary {
