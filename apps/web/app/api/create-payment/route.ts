@@ -3,6 +3,7 @@ import { MercadoPagoConfig, Preference, Payment } from 'mercadopago';
 import { MERCADOPAGO_ACCESS_TOKEN, MERCADOPAGO_CONFIG } from '@/lib/mercadopago/config';
 import { createOrder, createPaymentRecord } from '@/lib/mercadopago/supabase-integration';
 import { getUser } from '@/lib/server/auth/user';
+import { createOrderFromCart, createOrderPayment, ShippingAddress, CartItem } from '@/lib/marketplace/orders';
 
 type PaymentRequestData = {
   items: Array<{
@@ -50,20 +51,26 @@ export async function POST(request: Request) {
     
     if (MERCADOPAGO_CONFIG.syncWithSupabase && user) {
       try {
-        // Crear la orden en Supabase
-        const orderItems = data.items.map(item => ({
-          productId: item.id,
-          quantity: item.quantity,
-          unitPrice: item.price
+        // Convertir los items al formato esperado por createOrderFromCart
+        const cartItems: CartItem[] = data.items.map(item => ({
+          id: item.id,
+          title: item.title,
+          price: item.price,
+          quantity: item.quantity
         }));
         
-        const order = await createOrder({
-          customerId: user.id,
-          items: orderItems,
-          totalAmount,
-          shippingAddress: data.shippingAddress,
-          billingAddress: data.billingAddress
-        });
+        // Preparar la dirección de envío
+        const shippingAddress: ShippingAddress = {
+          name: data.shippingAddress?.name || user.user_metadata?.full_name || 'Usuario',
+          address: data.shippingAddress?.address || '',
+          city: data.shippingAddress?.city || '',
+          state: data.shippingAddress?.state || '',
+          zipCode: data.shippingAddress?.zipCode || '',
+          country: data.shippingAddress?.country || 'México'
+        };
+        
+        // Crear la orden usando nuestra nueva función
+        const order = await createOrderFromCart(cartItems, shippingAddress, user.id);
         
         // Usar el ID de la orden creada en Supabase
         orderId = order.id;
@@ -114,6 +121,15 @@ export async function POST(request: Request) {
     // Si la sincronización con Supabase está habilitada, registrar el pago
     if (MERCADOPAGO_CONFIG.syncWithSupabase && orderId) {
       try {
+        // Usar nuestra nueva función de creación de pagos
+        await createOrderPayment(orderId, {
+          payment_id: result.id,
+          status: 'pending',
+          payment_method: 'mercado_pago',
+          amount: totalAmount
+        });
+        
+        // También registramos en el sistema anterior para mantener compatibilidad
         await createPaymentRecord({
           orderId,
           preferenceId: result.id,
@@ -173,20 +189,26 @@ export async function PUT(request: Request) {
     // Si la sincronización con Supabase está habilitada y no hay un orderId, crear la orden
     if (MERCADOPAGO_CONFIG.syncWithSupabase && user && !orderId && data.items) {
       try {
-        // Crear la orden en Supabase
-        const orderItems = data.items.map(item => ({
-          productId: item.id,
-          quantity: item.quantity,
-          unitPrice: item.price
+        // Convertir los items al formato esperado por createOrderFromCart
+        const cartItems: CartItem[] = data.items.map(item => ({
+          id: item.id,
+          title: item.title || 'Producto',
+          price: item.price || data.transactionAmount,
+          quantity: item.quantity || 1
         }));
         
-        const order = await createOrder({
-          customerId: user.id,
-          items: orderItems,
-          totalAmount: data.transactionAmount,
-          shippingAddress: data.shippingAddress,
-          billingAddress: data.billingAddress
-        });
+        // Preparar la dirección de envío
+        const shippingAddress: ShippingAddress = {
+          name: data.shippingAddress?.name || user.user_metadata?.full_name || 'Usuario',
+          address: data.shippingAddress?.address || '',
+          city: data.shippingAddress?.city || '',
+          state: data.shippingAddress?.state || '',
+          zipCode: data.shippingAddress?.zipCode || '',
+          country: data.shippingAddress?.country || 'México'
+        };
+        
+        // Crear la orden usando nuestra nueva función
+        const order = await createOrderFromCart(cartItems, shippingAddress, user.id);
         
         // Usar el ID de la orden creada en Supabase
         orderId = order.id;
@@ -219,6 +241,15 @@ export async function PUT(request: Request) {
     // Si la sincronización con Supabase está habilitada, registrar el pago
     if (MERCADOPAGO_CONFIG.syncWithSupabase && orderId) {
       try {
+        // Usar nuestra nueva función de creación de pagos
+        await createOrderPayment(orderId, {
+          payment_id: result.id.toString(),
+          status: result.status,
+          payment_method: 'credit_card',
+          amount: data.transactionAmount
+        });
+        
+        // También registramos en el sistema anterior para mantener compatibilidad
         await createPaymentRecord({
           orderId,
           paymentId: result.id,

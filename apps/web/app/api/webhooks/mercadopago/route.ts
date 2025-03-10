@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server';
 import { MercadoPagoConfig, Payment } from 'mercadopago';
 import { MERCADOPAGO_ACCESS_TOKEN, MERCADOPAGO_CONFIG, MERCADOPAGO_PUBLIC_KEY } from '../../../../lib/mercadopago/config';
 import { processWebhook, createPaymentEvent } from '../../../../lib/mercadopago/supabase-integration';
+import { createClient } from '@supabase/supabase-js';
+import { logPaymentEvent } from '../../../../lib/marketplace/orders';
 
 type WebhookData = {
   action: string;
@@ -45,8 +47,89 @@ export async function POST(request: Request) {
     
     // Verificar si debemos sincronizar con Supabase
     if (MERCADOPAGO_CONFIG.syncWithSupabase) {
-      // Procesar el webhook y sincronizar con Supabase
+      // Procesar el webhook con ambos sistemas para asegurar compatibilidad
       await processWebhook(data);
+      
+      // Procesar según el tipo de acción con el nuevo sistema
+      try {
+        switch (data.action) {
+          case 'payment.created':
+          case 'payment.updated': {
+            // Obtener los detalles del pago
+            const payment = new Payment(client);
+            const paymentInfo = await payment.get({ id: resourceId });
+            
+            // Inicializar Supabase con manejo explícito de tipos
+            const supabaseUrl: string = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
+            const supabaseServiceKey: string = process.env.SUPABASE_SERVICE_ROLE_KEY || '';
+            
+            // Verificar que tenemos las credenciales necesarias
+            if (!supabaseUrl || !supabaseServiceKey) {
+              console.error('Error: Faltan credenciales de Supabase para procesar el webhook');
+              throw new Error('Faltan credenciales de Supabase');
+            }
+            
+            const supabase = createClient(supabaseUrl, supabaseServiceKey);
+            
+            // Buscar el pago en nuestra base de datos
+            const { data: paymentData } = await supabase
+              .from('payments')
+              .select('id, order_id')
+              .eq('payment_id', resourceId)
+              .maybeSingle();
+            
+            if (paymentData) {
+              // Registrar el evento de pago
+              await logPaymentEvent(paymentData.id, {
+                status: paymentInfo.status,
+                details: `Pago ${resourceId} actualizado vía webhook. Estado: ${paymentInfo.status}`
+              });
+              
+              // Actualizar el estado del pago en la base de datos
+              await supabase
+                .from('payments')
+                .update({ 
+                  status: paymentInfo.status,
+                  updated_at: new Date().toISOString()
+                })
+                .eq('id', paymentData.id);
+              
+              // Actualizar el estado de la orden si es necesario
+              if (paymentInfo.status === 'approved') {
+                await supabase
+                  .from('orders')
+                  .update({ 
+                    status: 'paid',
+                    updated_at: new Date().toISOString()
+                  })
+                  .eq('id', paymentData.order_id);
+              } else if (paymentInfo.status === 'rejected' || paymentInfo.status === 'cancelled') {
+                await supabase
+                  .from('orders')
+                  .update({ 
+                    status: 'payment_failed',
+                    updated_at: new Date().toISOString()
+                  })
+                  .eq('id', paymentData.order_id);
+              }
+            }
+            
+            break;
+          }
+          
+          // Otros tipos de eventos que podríamos manejar
+          case 'merchant_order.created':
+          case 'merchant_order.updated':
+            console.log(`Orden ${resourceId} actualizada`);
+            break;
+            
+          default:
+            console.log(`Evento no manejado: ${data.action}`);
+        }
+      } catch (processingError) {
+        console.error('Error al procesar webhook con el nuevo sistema:', processingError);
+        // Continuamos con la ejecución normal aunque falle el nuevo sistema
+      }
     } else {
       // Procesar según el tipo de acción sin Supabase
       switch (data.action) {
