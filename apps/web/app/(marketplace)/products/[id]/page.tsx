@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, use } from 'react';
 import { supabaseClient } from '@kit/supabase/client';
 import { PageHeader } from '@kit/ui/page';
 import { Button } from '@kit/ui/button';
@@ -27,7 +27,7 @@ interface Product {
   created_at: string;
 }
 
-export default function ProductDetailPage({ params }: { params: { id: string } }) {
+export default function ProductDetailPage({ params }: { params: Promise<{ id: string }> | { id: string } }) {
   const [product, setProduct] = useState<Product | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -35,7 +35,10 @@ export default function ProductDetailPage({ params }: { params: { id: string } }
   const [addingToCart, setAddingToCart] = useState(false);
   const [selectedImage, setSelectedImage] = useState(0);
   const router = useRouter();
-  const { id } = params;
+  
+  // Usar React.use() para desenvolver los parámetros de ruta
+  const resolvedParams = params instanceof Promise ? use(params) : params;
+  const { id } = resolvedParams;
 
   useEffect(() => {
     async function loadProduct() {

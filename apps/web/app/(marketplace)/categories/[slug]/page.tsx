@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, use } from 'react';
 import { PageHeader } from '@kit/ui/page';
 import { Button } from '@kit/ui/button';
 import { Card } from '@kit/ui/card';
@@ -22,12 +22,15 @@ interface Category {
   slug: string;
 }
 
-export default function CategoryPage({ params }: { params: { slug: string } }) {
+export default function CategoryPage({ params }: { params: Promise<{ slug: string }> | { slug: string } }) {
   const [products, setProducts] = useState<Product[]>([]);
   const [category, setCategory] = useState<Category | null>(null);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
-  const { slug } = params;
+  
+  // Usar React.use() para desenvolver los parámetros de ruta
+  const resolvedParams = params instanceof Promise ? use(params) : params;
+  const { slug } = resolvedParams;
 
   useEffect(() => {
     async function loadCategoryAndProducts() {
