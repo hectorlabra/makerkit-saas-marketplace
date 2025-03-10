@@ -8,7 +8,9 @@
       "~/components/*": ["./components/*"],
       "~/lib/*": ["./lib/*"],
       "@kit/ui/*": ["../../packages/ui/src/*"],
-      "@kit/features/*": ["../../packages/features/*/src/*"],
+      "@kit/features/*": ["../../packages/features/*/src"],
+      "@kit/features/accounts": ["../../packages/features/accounts/src"],
+      "@kit/features/auth": ["../../packages/features/auth/src"],
       "@kit/supabase/*": ["../../packages/supabase/src/*"]
     },
     "plugins": [

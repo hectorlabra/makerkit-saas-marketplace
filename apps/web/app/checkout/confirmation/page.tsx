@@ -6,6 +6,8 @@ import { Button } from '@kit/ui/button';
 import { Card } from '@kit/ui/card';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
+import { createClient } from '@supabase/supabase-js';
+import { getOrderById, getOrderPayments, formatPaymentStatus } from '~/lib/marketplace/orders';
 
 interface OrderDetails {
   id: string;
@@ -36,47 +38,84 @@ export default function OrderConfirmationPage() {
   const searchParams = useSearchParams();
 
   useEffect(() => {
-    // Obtener parámetros de la URL que podrían venir de MercadoPago
-    const paymentId = searchParams.get('payment_id');
-    const status = searchParams.get('status');
-    const paymentType = searchParams.get('payment_type');
-    const merchantOrderId = searchParams.get('merchant_order_id');
-    
-    // En una implementación real, estos datos vendrían de la respuesta de la API de pago
-    // o se recuperarían de Supabase después de registrar la orden.
-    // Por ahora, simulamos datos para desarrollo.
-    
-    const mockOrder: OrderDetails = {
-      id: merchantOrderId || 'ORD-' + Math.floor(100000 + Math.random() * 900000),
-      date: new Date().toISOString(),
-      total: 904.77,
-      paymentMethod: paymentType || 'MercadoPago',
-      paymentStatus: (status as any) || 'approved',
-      paymentId: paymentId,
-      items: [
-        { id: '1', title: 'Smartphone XYZ', quantity: 1, price: 599.99 },
-        { id: '3', title: 'Auriculares inalámbricos', quantity: 2, price: 89.99 }
-      ],
-      shippingAddress: {
-        name: 'Usuario de Prueba',
-        address: 'Calle Ejemplo 123',
-        city: 'Ciudad de México',
-        state: 'CDMX',
-        zipCode: '01000',
-        country: 'México'
+    async function loadOrderDetails() {
+      try {
+        // Obtener parámetros de la URL que podrían venir de MercadoPago
+        const paymentId = searchParams.get('payment_id');
+        const status = searchParams.get('status');
+        const paymentType = searchParams.get('payment_type');
+        const merchantOrderId = searchParams.get('merchant_order_id');
+        const orderId = searchParams.get('order_id');
+        
+        // Si tenemos un ID de orden, intentamos obtenerla de Supabase
+        if (orderId) {
+          try {
+            const orderData = await getOrderById(orderId);
+            const paymentsData = await getOrderPayments(orderId);
+            
+            if (orderData) {
+              // Construir el objeto OrderDetails con datos reales
+              const realOrder: OrderDetails = {
+                id: orderData.id,
+                date: orderData.created_at,
+                total: orderData.total_amount,
+                paymentMethod: paymentsData?.[0]?.payment_method || 'Desconocido',
+                paymentStatus: paymentsData?.[0]?.status || 'pending',
+                paymentId: paymentsData?.[0]?.payment_id,
+                items: orderData.items?.map(item => ({
+                  id: item.product.id,
+                  title: item.product.title,
+                  quantity: item.quantity,
+                  price: item.unit_price
+                })) || [],
+                shippingAddress: {
+                  name: orderData.shipping_name || 'No disponible',
+                  address: orderData.shipping_address || 'No disponible',
+                  city: orderData.shipping_city || 'No disponible',
+                  state: orderData.shipping_state || 'No disponible',
+                  zipCode: orderData.shipping_zip_code || 'No disponible',
+                  country: orderData.shipping_country || 'No disponible'
+                }
+              };
+              
+              setOrderDetails(realOrder);
+              return;
+            }
+          } catch (error) {
+            console.error('Error al cargar la orden desde Supabase:', error);
+            // Continuamos con el fallback a datos de prueba
+          }
+        }
+        
+        // Fallback a datos de prueba si no podemos obtener la orden real
+        const mockOrder: OrderDetails = {
+          id: orderId || merchantOrderId || 'ORD-' + Math.floor(100000 + Math.random() * 900000),
+          date: new Date().toISOString(),
+          total: 904.77,
+          paymentMethod: paymentType || 'MercadoPago',
+          paymentStatus: (status as any) || 'approved',
+          paymentId: paymentId,
+          items: [
+            { id: '1', title: 'Smartphone XYZ', quantity: 1, price: 599.99 },
+            { id: '3', title: 'Auriculares inalámbricos', quantity: 2, price: 89.99 }
+          ],
+          shippingAddress: {
+            name: 'Usuario de Prueba',
+            address: 'Calle Ejemplo 123',
+            city: 'Ciudad de México',
+            state: 'CDMX',
+            zipCode: '01000',
+            country: 'México'
+          }
+        };
+        
+        setOrderDetails(mockOrder);
+      } catch (error) {
+        console.error('Error al cargar detalles de la orden:', error);
       }
-    };
+    }
     
-    setOrderDetails(mockOrder);
-    
-    // En una implementación real, aquí vaciaríamos el carrito después de un pago exitoso
-    // y guardaríamos los detalles de la orden en Supabase.
-    
-    // Ejemplo:
-    // if (status === 'approved') {
-    //   clearCart();
-    //   saveOrderToSupabase(mockOrder);
-    // }
+    loadOrderDetails();
   }, [searchParams]);
 
   const formatDate = (dateString: string) => {
@@ -142,9 +181,19 @@ export default function OrderConfirmationPage() {
             <p className="text-gray-500">Realizado el {formatDate(orderDetails.date)}</p>
           </div>
           <div>
-            <span className="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-medium">
-              Pago Completado
-            </span>
+            {orderDetails.paymentStatus === 'approved' ? (
+              <span className="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-medium">
+                Pago Completado
+              </span>
+            ) : orderDetails.paymentStatus === 'pending' || orderDetails.paymentStatus === 'in_process' ? (
+              <span className="bg-yellow-100 text-yellow-800 px-3 py-1 rounded-full text-sm font-medium">
+                Pago Pendiente
+              </span>
+            ) : (
+              <span className="bg-red-100 text-red-800 px-3 py-1 rounded-full text-sm font-medium">
+                Pago Rechazado
+              </span>
+            )}
           </div>
         </div>
 
@@ -196,8 +245,11 @@ export default function OrderConfirmationPage() {
       </Card>
 
       <div className="flex justify-center space-x-4 mt-8">
-        <Button onClick={() => router.push('/')}>
-          Volver al Inicio
+        <Button onClick={() => router.push('/products')}>
+          Seguir Comprando
+        </Button>
+        <Button onClick={() => router.push('/dashboard/orders')} variant="outline">
+          Ver Mis Pedidos
         </Button>
         <Link href="/products">
           <Button variant="outline">
