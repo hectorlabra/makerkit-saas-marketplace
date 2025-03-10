@@ -2,7 +2,10 @@
 
 import { useEffect, useState } from 'react';
 import { supabaseClient } from '@kit/supabase/client';
-import { PageHeader, Button, Card, Input } from '@kit/ui';
+import { PageHeader } from '@kit/ui/page';
+import { Button } from '@kit/ui/button';
+import { Card } from '@kit/ui/card';
+import { Input } from '@kit/ui/input';
 import Link from 'next/link';
 
 interface Product {

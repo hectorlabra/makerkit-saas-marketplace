@@ -1,7 +1,9 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { PageHeader, Button } from '@kit/ui';
+import { PageHeader } from '@kit/ui/page';
+import { Button } from '@kit/ui/button';
+import { Card } from '@kit/ui/card';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 

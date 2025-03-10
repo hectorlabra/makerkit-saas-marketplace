@@ -1,10 +1,12 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { supabaseClient } from '@kit/supabase/client';
-import { PageHeader, Button } from '@kit/ui';
+import { PageHeader } from '@kit/ui/page';
+import { Button } from '@kit/ui/button';
+import { Card } from '@kit/ui/card';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 
 interface Product {
   id: string;
@@ -132,10 +134,12 @@ export default function CategoryPage({ params }: { params: { slug: string } }) {
               <div className="border rounded-lg overflow-hidden hover:shadow-lg transition-shadow">
                 <div className="aspect-square bg-gray-200 relative">
                   {product.images && product.images.length > 0 ? (
-                    <img
+                    <Image
                       src={product.images[0]}
                       alt={product.title}
-                      className="object-cover w-full h-full"
+                      layout="fill"
+                      objectFit="cover"
+                      className="w-full h-full"
                     />
                   ) : (
                     <div className="flex items-center justify-center h-full text-gray-400">

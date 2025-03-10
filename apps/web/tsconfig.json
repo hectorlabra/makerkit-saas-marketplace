@@ -1,12 +1,15 @@
 {
-  "extends": "@kit/tsconfig/base.json",
+  "extends": "../../tooling/typescript/base.json",
   "compilerOptions": {
     "baseUrl": ".",
     "paths": {
       "~/*": ["./app/*"],
       "~/config/*": ["./config/*"],
       "~/components/*": ["./components/*"],
-      "~/lib/*": ["./lib/*"]
+      "~/lib/*": ["./lib/*"],
+      "@kit/ui/*": ["../../packages/ui/src/*"],
+      "@kit/features/*": ["../../packages/features/*/src/*"],
+      "@kit/supabase/*": ["../../packages/supabase/src/*"]
     },
     "plugins": [
       {

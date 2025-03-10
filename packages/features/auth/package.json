@@ -9,6 +9,7 @@
     "typecheck": "tsc --noEmit"
   },
   "exports": {
+    "./hooks/*": "./hooks/*.ts",
     "./sign-in": "./src/sign-in.ts",
     "./sign-up": "./src/sign-up.ts",
     "./password-reset": "./src/password-reset.ts",

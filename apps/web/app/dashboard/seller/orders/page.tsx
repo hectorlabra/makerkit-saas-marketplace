@@ -1,10 +1,12 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { PageHeader, Card, Button } from '@kit/ui';
+import { PageHeader } from '@kit/ui/page';
+import { Button } from '@kit/ui/button';
+import { Card } from '@kit/ui/card';
 import { useRouter } from 'next/navigation';
 import { supabaseClient } from '@kit/supabase/client';
-import { useAuthRole } from '@kit/features/auth/hooks/use-auth-role';
+import { useAuthRole } from '@kit/auth/hooks/use-auth-role';
 import { useUser } from '@kit/supabase/hooks/use-user';
 
 interface Order {

@@ -1,121 +1,82 @@
 ![Makerkit - Next.js Supabase SaaS Starter Kit \[Lite version\]](apps/web/public/images/makerkit.webp)
 
-# NEW! Next.js Supabase SaaS Starter Kit (Lite)
+# Next.js Supabase SaaS Marketplace Kit
 
-Start building your SaaS faster with our Next.js 15 + Supabase starter kit.
+Un kit de inicio para construir un marketplace SaaS usando Next.js 15 + Supabase.
 
-👉 **Looking for a full-featured SaaS Starter Kit?** [Check out the complete version](https://makerkit.dev)
+## Características Core
 
-⭐️ **Why Developers Trust Makerkit:**
-- Production-grade architecture decisions
-- Comprehensive TypeScript setup
-- Modern stack: Next.js 15, Supabase, TailwindCSS v4
-- Quality Code tooling: ESLint v9, Prettier, strict TypeScript, etc.
-- Regular updates and active maintenance
+### Arquitectura Base
+- 🏗️ Next.js 15 + Turborepo configuración monorepo
+- 🎨 Shadcn UI components con TailwindCSS v4
+- 🔐 Autenticación Supabase & base de datos
+- 🌐 Traducciones i18n (client + server)
+- ✨ TypeScript + ESLint v9 + Prettier
 
-PS: the documentation for this kit is still being updated, so please check back later for more details.
+### Características del Marketplace
+- 👤 Sistema de autenticación de usuarios
+- 🛍️ Catálogo de productos
+- 🏷️ Sistema de categorías
+- 🛒 Carrito de compras
+- 💳 Integración con MercadoPago
+- 📦 Gestión de pedidos
+- 👨‍💼 Panel de vendedor
+- 🔒 Rutas protegidas por roles
+- 📱 Diseño responsive
 
-## What's Included
+### Stack Tecnológico
 
-### Core Architecture
-- 🏗️ Next.js 15 + Turborepo monorepo setup
-- 🎨 Shadcn UI components with TailwindCSS v4
-- 🔐 Supabase authentication & basic DB
-- 🌐 i18n translations (client + server)
-- ✨ Full TypeScript + ESLint v9 + Prettier configuration
+Este kit utiliza las siguientes tecnologías:
 
-### Key Features
-- 👤 User authentication flow
-- ⚙️ User profile & settings
-- 📱 Responsive marketing pages
-- 🔒 Protected routes
-- 🎯 Basic test setup with Playwright
+🛠️ **Stack Principal**:
+- [Next.js 15](https://nextjs.org/): Framework React para SSR y SSG
+- [Tailwind CSS](https://tailwindcss.com/): Framework CSS utility-first
+- [Supabase](https://supabase.com/): Base de datos en tiempo real
+- [MercadoPago](https://www.mercadopago.com/): Procesamiento de pagos
+- [i18next](https://www.i18next.com/): Framework de internacionalización
+- [Turborepo](https://turborepo.org/): Herramienta para gestión de monorepo
+- [Shadcn UI](https://shadcn.com/): Componentes UI construidos con Tailwind CSS
+- [Zod](https://github.com/colinhacks/zod): Validación de esquemas TypeScript
+- [React Query](https://tanstack.com/query/v4): Librería para fetch y cache de datos
+- [Prettier](https://prettier.io/): Formateador de código
+- [Eslint](https://eslint.org/): Herramienta de linting
+- [Playwright](https://playwright.dev/): Framework para testing end-to-end
 
-### Technologies
+## Empezando
 
-This starter kit provides core foundations:
+### Prerequisitos
 
-🛠️ **Technology Stack**:
-- [Next.js 15](https://nextjs.org/): A React-based framework for server-side rendering and static site generation.
-- [Tailwind CSS](https://tailwindcss.com/): A utility-first CSS framework for rapidly building custom designs.
-- [Supabase](https://supabase.com/): A realtime database for web and mobile applications.
-- [i18next](https://www.i18next.com/): A popular internationalization framework for JavaScript.
-- [Turborepo](https://turborepo.org/): A monorepo tool for managing multiple packages and applications.
-- [Shadcn UI](https://shadcn.com/): A collection of components built using Tailwind CSS.
-- [Zod](https://github.com/colinhacks/zod): A TypeScript-first schema validation library.
-- [React Query](https://tanstack.com/query/v4): A powerful data fetching and caching library for React.
-- [Prettier](https://prettier.io/): An opinionated code formatter for JavaScript, TypeScript, and CSS.
-- [Eslint](https://eslint.org/): A powerful linting tool for JavaScript and TypeScript.
-- [Playwright](https://playwright.dev/): A framework for end-to-end testing of web applications.
-
-This kit is a trimmed down version of the [full version of this SaaS Starter Kit](https://makerkit.dev). It is a good way to evaluate small part of the full kit, or to simply use it as a base for your own project.
-
-## Comparing Lite vs Full Version
-
-The lite kit is perfect for:
-- Evaluating our code architecture and patterns
-- Building basic SaaS prototypes
-- Learning our tech stack approach
-- Building a basic SaaS tool
-
-The [full version](https://makerkit.dev) adds production features:
-- 💳 Complete billing and subscription system
-- 👥 Team accounts and management
-- 📧 Mailers and Email Templates (Nodemailer, Resend, etc.)
-- 📊 Analytics (GA, Posthog, Umami, etc.)
-- 🔦 Monitoring providers (Sentry, Baselime, etc.)
-- 🔐 Production database schema
-- ✅ Comprehensive test suite
-- 🔔 Realtime Notifications
-- 📝 Blogging system
-- 💡 Documentation system
-- ‍💻 Super Admin panel
-- 🕒 Daily updates and improvements
-- 🐛 Priority bug fixes
-- 🤝 Support
-- ⭐️ Used by 1000+ developers
-- 💪 Active community members
-- 🏢 Powers startups to enterprises
-
-[View complete feature comparison →](https://makerkit.dev/#pricing)
-
-## Getting Started
-
-### Prerequisites
-
-- Node.js 18.x or later (preferably the latest LTS version)
+- Node.js 18.x o superior (preferiblemente la última versión LTS)
 - Docker
 - PNPM
 
-Please make sure you have a Docker daemon running on your machine. This is required for the Supabase CLI to work.
+Asegúrate de tener Docker ejecutándose en tu máquina. Esto es necesario para el CLI de Supabase.
 
-### Installation
+### Instalación
 
-#### 1. Clone this repository
+#### 1. Clonar el repositorio
 
 ```bash
-git clone https://github.com/makerkit/next-supabase-saas-kit-lite.git
+git clone <URL-del-repositorio>
 ```
 
-#### 2. Install dependencies
+#### 2. Instalar dependencias
 
 ```bash
 pnpm install
 ```
 
-#### 3. Start Supabase
+#### 3. Iniciar Supabase
 
-Please make sure you have a Docker daemon running on your machine.
+Asegúrate de tener Docker ejecutándose en tu máquina.
 
-Then run the following command to start Supabase:
+Luego ejecuta el siguiente comando para iniciar Supabase:
 
 ```bash
 pnpm run supabase:web:start
 ```
 
-Once the Supabase server is running, please access the Supabase Dashboard using the port in the output of the previous command. Normally, you find it at [http://localhost:54323](http://localhost:54323).
-
-You will also find all the Supabase services printed in the terminal after the command is executed.
+Una vez que el servidor Supabase esté ejecutándose, accede al Dashboard de Supabase usando el puerto en la salida del comando anterior. Normalmente lo encontrarás en [http://localhost:54323](http://localhost:54323).
 
 ##### Stopping Supabase
 
@@ -148,13 +109,13 @@ pnpm --filter web supabase db link
 pnpm --filter web supabase db push
 ```
 
-#### 4. Start the Next.js application
+#### 4. Iniciar la aplicación Next.js
 
 ```bash
 pnpm run dev
 ```
 
-The application will be available at http://localhost:3000.
+La aplicación estará disponible en http://localhost:3000.
 
 #### 5. Code Health (linting, formatting, etc.)
 
@@ -178,28 +139,29 @@ pnpm run typecheck
 
 Turborepo will cache the results of these commands, so you can run them as many times as you want without any performance impact.
 
-## Project Structure
+## Estructura del Proyecto
 
-The project is organized into the following folders:
+El proyecto está organizado en las siguientes carpetas:
 
 ```
 apps/
-├── web/                  # Next.js application
-│   ├── app/             # App Router pages
-│   │   ├── (marketing)/ # Public marketing pages
-│   │   ├── auth/        # Authentication pages
-│   │   └── home/        # Protected app pages
-│   ├── supabase/        # Database & migrations
-│   └── config/          # App configuration
+├── web/                     # Aplicación Next.js
+│   ├── app/                # App Router pages
+│   │   ├── (marketing)/    # Páginas públicas
+│   │   ├── (marketplace)/  # Páginas del marketplace
+│   │   ├── auth/          # Páginas de autenticación
+│   │   ├── checkout/      # Proceso de checkout
+│   │   └── dashboard/     # Panel de vendedor
+│   ├── supabase/          # Base de datos & migraciones
+│   └── config/            # Configuración de la app
 │
 packages/
-├── ui/                  # Shared UI components
-└── features/           # Core feature packages
-    ├── auth/           # Authentication logic
+├── ui/                    # Componentes UI compartidos
+└── features/             # Paquetes de funcionalidades core
+    ├── auth/             # Lógica de autenticación
+    ├── marketplace/      # Lógica del marketplace
     └── ...
 ```
-
-For more information about this project structure, see the article [Next.js App Router: Project Structure](https://makerkit.dev/blog/tutorials/nextjs-app-router-project-structure).
 
 ### Environment Variables
 

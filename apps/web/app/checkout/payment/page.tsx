@@ -1,7 +1,10 @@
 'use client';
 
 import { useState } from 'react';
-import { PageHeader, Button, Card, Input } from '@kit/ui';
+import { Button } from '@kit/ui/shadcn/button';
+import { Card } from '@kit/ui/shadcn/card';
+import { Input } from '@kit/ui/shadcn/input';
+import { PageHeader } from '@kit/ui/makerkit/page';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 
