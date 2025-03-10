@@ -1,12 +1,14 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@kit/ui/shadcn/button';
 import { Card } from '@kit/ui/shadcn/card';
 import { Input } from '@kit/ui/shadcn/input';
 import { PageHeader } from '@kit/ui/makerkit/page';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { initMercadoPago, CardPayment } from '@mercadopago/sdk-react';
+import { MERCADOPAGO_PUBLIC_KEY } from '@/lib/mercadopago/config';
 
 // Esta interfaz representaría lo que vendría de la página del carrito
 interface OrderSummary {
@@ -25,6 +27,7 @@ export default function CheckoutPaymentPage() {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState<'credit_card' | 'mp'>('credit_card');
+  const [mpInitialized, setMpInitialized] = useState(false);
   const [formData, setFormData] = useState({
     cardNumber: '',
     cardName: '',
@@ -47,6 +50,18 @@ export default function CheckoutPaymentPage() {
       { id: '3', title: 'Auriculares inalámbricos', quantity: 2, price: 89.99 }
     ]
   };
+  
+  // Inicializar MercadoPago
+  useEffect(() => {
+    // Inicializar el SDK de MercadoPago usando la clave de la configuración centralizada
+    try {
+      initMercadoPago(MERCADOPAGO_PUBLIC_KEY);
+      setMpInitialized(true);
+      console.log('MercadoPago inicializado correctamente');
+    } catch (error) {
+      console.error('Error al inicializar MercadoPago:', error);
+    }
+  }, []);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -80,25 +95,71 @@ export default function CheckoutPaymentPage() {
     e.preventDefault();
     setIsSubmitting(true);
     
-    // Aquí simularemos el proceso de pago
+    // Procesamiento según el método de pago seleccionado
     try {
-      // En una implementación real, aquí conectaríamos con un servicio de pago
-      console.log('Procesando pago con los siguientes datos:', { 
-        method: paymentMethod,
-        formData,
-        orderSummary
-      });
-      
-      // Simulamos un delay para la transacción
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
-      // Redirigimos a la página de confirmación
-      router.push('/checkout/confirmation');
+      if (paymentMethod === 'credit_card') {
+        // Procesamiento de tarjeta de crédito propio
+        console.log('Procesando pago con tarjeta:', formData);
+        
+        // Simulamos un delay para la transacción
+        await new Promise(resolve => setTimeout(resolve, 2000));
+        
+        // Redirigimos a la página de confirmación
+        router.push('/checkout/confirmation');
+      } else {
+        // MercadoPago se maneja en su propio componente
+        console.log('MercadoPago seleccionado - el procesamiento se realiza en el componente de MercadoPago');
+      }
     } catch (error) {
       console.error('Error al procesar el pago:', error);
       setIsSubmitting(false);
       // Mostrar mensaje de error
       alert('Error al procesar el pago. Por favor, inténtalo de nuevo.');
+    }
+  };
+  
+  // Manejador para el pago con MercadoPago
+  const handleMercadoPagoSubmit = async (formData: any) => {
+    try {
+      console.log('Datos del formulario de MercadoPago:', formData);
+      
+      // Mostrar estado de carga
+      setIsSubmitting(true);
+      
+      // Enviar datos al backend para procesar el pago
+      const response = await fetch('/api/create-payment', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          token: formData.token,
+          issuerId: formData.issuer_id,
+          paymentMethodId: formData.payment_method_id,
+          transactionAmount: orderSummary.total,
+          installments: formData.installments || 1,
+          description: 'Compra en Marketplace',
+          email: 'usuario@example.com',
+          identification: {
+            type: 'DNI',
+            number: '12345678'
+          },
+          items: orderSummary.items
+        })
+      });
+      
+      const result = await response.json();
+      
+      if (result.error) {
+        throw new Error(result.error);
+      }
+      
+      console.log('Resultado del pago:', result);
+      
+      // Redirigimos a la página de confirmación
+      router.push('/checkout/confirmation');
+    } catch (error) {
+      console.error('Error al procesar el pago con MercadoPago:', error);
+      setIsSubmitting(false);
+      alert('Error al procesar el pago con MercadoPago. Por favor, inténtalo de nuevo.');
     }
   };
 
@@ -293,11 +354,32 @@ export default function CheckoutPaymentPage() {
                   </div>
                 </>
               ) : (
-                <div className="text-center p-8 border rounded-lg bg-gray-50">
-                  <p className="mb-4">Serás redirigido a MercadoPago para completar tu pago.</p>
-                  <p className="text-sm text-gray-500">
-                    (Esta es una simulación. En una implementación real, se integraría el SDK de MercadoPago)
-                  </p>
+                <div className="p-4 border rounded-lg">
+                  {mpInitialized ? (
+                    <div className="space-y-4">
+                      <p className="text-center text-gray-600 mb-4">
+                        Completa los datos de tu tarjeta con MercadoPago
+                      </p>
+                      <CardPayment
+                        initialization={{ 
+                          amount: orderSummary.total,
+                          preferenceId: '' // No es necesario para pagos con tarjeta directos
+                        }}
+                        onSubmit={handleMercadoPagoSubmit}
+                        onError={(error) => {
+                          console.error('Error en el formulario de MercadoPago:', error);
+                          setIsSubmitting(false);
+                          alert('Error en el formulario de pago. Por favor, inténtalo de nuevo.');
+                        }}
+                        onReady={() => console.log('MercadoPago CardPayment listo')}
+                        onBinChange={(bin) => console.log('BIN cambiado:', bin)}
+                      />
+                    </div>
+                  ) : (
+                    <p className="text-center text-gray-600">
+                      Cargando MercadoPago...
+                    </p>
+                  )}
                 </div>
               )}
 
