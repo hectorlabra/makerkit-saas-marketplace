@@ -1,11 +1,11 @@
 'use client';
 
 import { useEffect, useState, use } from 'react';
-import { supabaseClient } from '@kit/supabase/client';
-import { PageHeader } from '@kit/ui/page';
-import { Button } from '@kit/ui/button';
-import { Card } from '@kit/ui/card';
-import Image from 'next/image';
+// Comentamos esta importación ya que no se está utilizando actualmente
+// import { supabaseClient } from '@kit/supabase/client';
+import { PageHeader } from '@kit/ui/makerkit/page';
+import { Button } from '@kit/ui/shadcn/button';
+import { Card } from '@kit/ui/shadcn/card';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 

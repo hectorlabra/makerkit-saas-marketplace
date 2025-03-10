@@ -111,7 +111,7 @@ export default function CategoryPage({ params }: { params: Promise<{ slug: strin
     <div className="flex flex-col space-y-6">
       <PageHeader
         title={category.name}
-        subtitle={`Explora todos los productos en ${category.name}`}
+        description={`Explora todos los productos en ${category.name}`}
       />
 
       <div className="mb-4">
@@ -137,12 +137,10 @@ export default function CategoryPage({ params }: { params: Promise<{ slug: strin
               <div className="border rounded-lg overflow-hidden hover:shadow-lg transition-shadow">
                 <div className="aspect-square bg-gray-200 relative">
                   {product.images && product.images.length > 0 ? (
-                    <Image
+                    <img
                       src={product.images[0]}
                       alt={product.title}
-                      layout="fill"
-                      objectFit="cover"
-                      className="w-full h-full"
+                      className="w-full h-full object-cover"
                     />
                   ) : (
                     <div className="flex items-center justify-center h-full text-gray-400">
